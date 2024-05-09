@@ -12,16 +12,13 @@ export class UserController {
     @UseGuards(AuthGuard)
     @Get()
     @HttpCode(200)
-    getUser(@Request() req): Promise<UserDto.GetUserDto> {
-        console.log(req.user)
+    getUser(): Promise<UserDto.GetUserDto> {
         return this.userService.getUser();
     };
 
     @Post()
     @HttpCode(201)
     addUser(@Body() postData: UserDto.AddUserDto): Promise<any> {
-        console.log("user post")
-
         return this.userService.addUser(postData);
     };
 

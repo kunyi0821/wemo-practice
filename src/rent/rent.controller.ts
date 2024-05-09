@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Get, Delete, HttpCode, Body, Request, UseGuards} from "@nestjs/common";
+import { Controller, Post, Get, HttpCode, Body, Request, UseGuards, Res, HttpStatus} from "@nestjs/common";
 import { RentService } from "./rent.service";
 import { RentDto } from "./rent.dto";
 import { AuthGuard } from "src/auth/auth.guard";

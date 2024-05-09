@@ -5,18 +5,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { UserService } from 'src/user/user.service';
 import { MysqlService } from 'src/common/mysql.service';
-import { jwtConstant } from './auth.constant';
+import { ReturnService } from '@common/return.service';
 
+console.log("process", process.env.PASSWORD_SECRET_KEY)
 @Module({
     imports: [
         UserModule,
         JwtModule.register({
         global: true,
-        secret: jwtConstant.secret,
+        secret: process.env.PASSWORD_SECRET_KEY,
         signOptions: { expiresIn: "30d" },
         }),
     ],
-    providers: [AuthService, UserService, MysqlService],
+    providers: [AuthService, UserService, MysqlService, ReturnService],
     controllers: [AuthController],
     exports: [AuthService],
 })

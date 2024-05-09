@@ -1,10 +1,14 @@
-import { Injectable } from "@nestjs/common";
+import { ReturnService } from "@common/return.service";
+import { Injectable, HttpStatus } from "@nestjs/common";
 import { MysqlService } from "src/common/mysql.service";
 
 @Injectable()
 export class UserService {
 
-    constructor(private readonly mysqlService: MysqlService) {};
+    constructor(
+        private readonly mysqlService: MysqlService,
+        private readonly returnService: ReturnService
+    ) {};
 
     async getUser(): Promise<any> {
         let returnArray = [];
@@ -21,18 +25,18 @@ export class UserService {
             })
         }
 
-        return returnArray;
+        return this.returnService.returnJson("Success", HttpStatus.OK, returnArray);;
     }
 
     async addUser(data: any): Promise<any> {
-        console.log("addUser")
+
         const { account, password, user_name } = data;
         const connection = await this.mysqlService.init();
 
         const insertSql = `INSERT INTO User (account, password, user_name) VALUES (?, ?, ?)`;
         const insertResult = await this.mysqlService.execute(connection, insertSql, [account, password, user_name]);
 
-        return true;
+        return this.returnService.returnJson("Success", HttpStatus.OK, {});
     }
     
     async findOne(account: string): Promise<any> {
@@ -41,7 +45,6 @@ export class UserService {
         const connection = await this.mysqlService.init();
         
         const userResult = await this.mysqlService.execute(connection, selectSql, [account]);
-        console.log("userResult", userResult)
         
         return userResult.find(user => user.account === account);
     }

@@ -8,18 +8,13 @@ export class ScooterController {
 
     @Get()
     @HttpCode(200)
-    getUser(): Promise<ScooterDto.GetScooterDto> {
+    getScooter(): Promise<ScooterDto.GetScooterDto> {
         return this.scooterService.getScooter();
     };
 
     @Post()
     @HttpCode(201)
-    getUser2(@Body() postData: ScooterDto.AddScooterDto): any {
-
-        if (!postData.license_plate) {
-            console.error("license_plate is necessary");
-            return {error: "license_plate is necessary"};
-        }
+    addScooter(@Body() postData: ScooterDto.AddScooterDto): any {
 
        return this.scooterService.addScooter(postData);
     };

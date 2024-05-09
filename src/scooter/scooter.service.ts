@@ -1,10 +1,14 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, HttpStatus } from "@nestjs/common";
 import { MysqlService } from "src/common/mysql.service";
+import { ReturnService } from "@common/return.service";
 
 @Injectable()
 export class ScooterService {
 
-    constructor(private readonly mysqlService: MysqlService) {};
+    constructor(
+        private readonly mysqlService: MysqlService,
+        private readonly returnService: ReturnService
+    ) {};
 
     async getScooter(): Promise<any> {
         let returnArray = [];
@@ -17,14 +21,14 @@ export class ScooterService {
             returnArray.push({
                 scooter_id: scooter.scooter_id,
                 license_plate: scooter.license_plate,
-                is_use: scooter.is_use,
-                is_enable: scooter.is_enable,
+                is_use: scooter.is_use ? true : false,
+                is_enable: scooter.is_enable ? true : false,
                 created_at: scooter.created_at,
                 updataed_at: scooter.updataed_at
             })
         }
 
-        return returnArray;
+        return this.returnService.returnJson("Success", HttpStatus.OK, returnArray);;
     }
 
     async addScooter(data: any): Promise<any> {
@@ -34,6 +38,6 @@ export class ScooterService {
         const insertSql = `INSERT INTO Scooter (license_plate) VALUES (?)`;
         await this.mysqlService.execute(connection, insertSql, [license_plate]);
 
-        return {};
+        return this.returnService.returnJson("Success", HttpStatus.OK, {});;
     }
 }

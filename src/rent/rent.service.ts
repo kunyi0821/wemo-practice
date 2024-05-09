@@ -1,21 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, HttpStatus } from "@nestjs/common";
 import { MysqlService } from "src/common/mysql.service";
+import { RedisService } from "@common/redis.service";
+import { ReturnService } from "@common/return.service";
 import { RentDto } from "./rent.dto";
 import * as dayjs from "dayjs";
 
 @Injectable()
 export class RentService {
 
-    constructor(private readonly mysqlService: MysqlService) {};
+    constructor(
+        private readonly mysqlService: MysqlService,
+        private readonly redisService: RedisService,
+        private readonly returnService: ReturnService
+    ) {};
 
     async getRent(): Promise<any> {
-        let returnArray = [];
 
         const connection = await this.mysqlService.init();
 
         let rentData = await this.mysqlService.execute(connection, `SELECT * FROM Rent`);
 
-        return rentData;
+        return this.returnService.returnJson("Success", HttpStatus.OK, rentData);
     }
 
     async startRent(data: RentDto.RentStartDto): Promise<any> {
@@ -25,13 +30,12 @@ export class RentService {
         const connection = await this.mysqlService.init();
         await connection.beginTransaction();
         
-        const selectRentSql = `SELECT rent_id FROM Rent WHERE user_id = ? AND use_time = 0 AND end_at IS NULL`;
-        const rentResult = await this.mysqlService.execute(connection, selectRentSql, [user_id]);
+        const rentInfo = await this.redisService.hget(user_id, "rent");
 
-        if (rentResult.length > 0) {
+        if (rentInfo) {
             console.error("User has rented scooter");
             await connection.rollback();
-            return {error: "User has rented scooter"};
+            return this.returnService.returnJson("User has rented scooter", HttpStatus.INTERNAL_SERVER_ERROR, {});
         }
 
         const updateScooterSql = `UPDATE Scooter SET is_use = 1 WHERE scooter_id = ? AND is_use = 0`;
@@ -40,15 +44,18 @@ export class RentService {
         if (updateScooterResult.affectedRows === 0) {
             console.error("This scooter is being used")
             await connection.rollback();
-            return {error: "This scooter is being used"}
+            return this.returnService.returnJson("This scooter is being used", HttpStatus.INTERNAL_SERVER_ERROR, {});
         }
 
         const insertSql = `INSERT INTO Rent (user_id, scooter_id, created_date, start_at) VALUES (?, ?, ?, ?)`;
-        await this.mysqlService.execute(connection, insertSql, [user_id, scooter_id, currentDatetime, currentDatetime]);
+        const insertResult = await this.mysqlService.execute(connection, insertSql, [user_id, scooter_id, currentDatetime, currentDatetime]);
+
+        const value = `${insertResult.insertId}_${currentDatetime}`
+        await this.redisService.hset(user_id, "rent", value);
 
         await connection.commit();
 
-        return true;
+        return this.returnService.returnJson("Success", HttpStatus.OK, {});;
     }
 
     async endRent(data: RentDto.RentStartDto): Promise<any> {
@@ -58,34 +65,32 @@ export class RentService {
         const connection = await this.mysqlService.init();
         await connection.beginTransaction();
 
+        const rentValue = await this.redisService.hget(user_id, "rent");
+
         const selectRentSql = `SELECT * FROM Rent WHERE user_id = ? AND scooter_id = ? AND use_time = 0 AND end_at IS NULL`;
         const rentResult = await this.mysqlService.execute(connection, selectRentSql, [user_id, scooter_id]);
 
-        console.log("rentResult", rentResult)
-        if (rentResult.length === 0) {
+        if (!rentValue) {
             console.error("User did not rent");
             await connection.rollback();
-            return {error: "User did not rent"};
+            return this.returnService.returnJson("User did not rent", HttpStatus.INTERNAL_SERVER_ERROR, {});
         }
 
-        if (rentResult.length > 1) {
-            console.error("User is limited to rent 1 scooter");
-            await connection.rollback();
-            return {error: "User is limited to rent 1 scooter"};
-        }
+        const rentInfo = (rentValue as string).split("_");
 
         const updateScooterSql = `UPDATE Scooter SET is_use = 0 WHERE scooter_id = ?`;
         const updateScooterResult = await this.mysqlService.execute(connection, updateScooterSql, [scooter_id]);
 
-        const useTime = dayjs(currentDatetime).diff(rentResult[0].start_at, "second");
+        const useTime = dayjs(currentDatetime).diff(rentInfo[1], "second");
 
         const updateRentSql = `UPDATE Rent SET end_at = ?, use_time = ? WHERE rent_id = ? AND user_id = ? AND scooter_id = ?`;
-        const updateRentResult = await this.mysqlService.execute(connection, updateRentSql, [currentDatetime, useTime, rentResult[0].rent_id, user_id, scooter_id])
+        const updateRentResult = await this.mysqlService.execute(connection, updateRentSql, [currentDatetime, useTime, rentInfo[0], user_id, scooter_id])
 
+        await this.redisService.hdel(user_id, "rent");
 
         await connection.commit();
 
-        return true;
+        return this.returnService.returnJson("Success", HttpStatus.OK, {});
     }
 
 }
