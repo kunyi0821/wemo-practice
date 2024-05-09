@@ -1,32 +1,36 @@
-import { Controller, Post, Put, Get, Delete, HttpCode, Body} from "@nestjs/common";
+import { Controller, Post, Put, Get, Delete, HttpCode, Body, Request, UseGuards} from "@nestjs/common";
 import { RentService } from "./rent.service";
 import { RentDto } from "./rent.dto";
+import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("rent")
 export class RentController {
-    constructor(private readonly scooterService: any) {}
+    constructor(private readonly rentService: RentService) {}
 
+    @UseGuards(AuthGuard)
     @Get()
     @HttpCode(200)
     getUser(): Promise<any> {
-        return this.scooterService.getScooter();
+        return this.rentService.getRent();
     };
 
-    @Post()
+    @UseGuards(AuthGuard)
+    @Post("start")
     @HttpCode(201)
-    getUser2(@Body() postData: any): any {
-
-       return
+    rentStart(@Request() req, @Body() postData: RentDto.RentStartDto): any {
+        postData.user_id = req.user.user_id;
+        return this.rentService.startRent(postData);
     };
 
-    @Put(":id")
-    putUser(): any {
-        return "Put";
-    };
+    @UseGuards(AuthGuard)
+    @Post("end")
+    @HttpCode(201)
+    rentEnd(@Request() req, @Body() postData: RentDto.RentStartDto): any {
+        postData.user_id = req.user.user_id;
 
-    @Delete(":id")
-    deleteUser(): any {
-        return "Delete"
-    }
+        return this.rentService.endRent(postData);
+    };
+    
+
 
 }

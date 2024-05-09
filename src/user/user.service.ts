@@ -4,9 +4,7 @@ import { MysqlService } from "src/common/mysql.service";
 @Injectable()
 export class UserService {
 
-    constructor(private readonly mysqlService: MysqlService) {
-
-    };
+    constructor(private readonly mysqlService: MysqlService) {};
 
     async getUser(): Promise<any> {
         let returnArray = [];
@@ -14,7 +12,6 @@ export class UserService {
         const connection = await this.mysqlService.init();
 
         let userData = await this.mysqlService.execute(connection, `SELECT * FROM User`);
-        console.log("userData = ",userData)
 
         for (const user of userData) {
             returnArray.push({
@@ -28,12 +25,24 @@ export class UserService {
     }
 
     async addUser(data: any): Promise<any> {
-        const { account, password, email, user_name } = data;
+        console.log("addUser")
+        const { account, password, user_name } = data;
         const connection = await this.mysqlService.init();
 
-        const insertSql = `INSERT INTO User (account, password, email, user_name) VALUES (?, ?, ?, ?)`;
-        await this.mysqlService.execute(connection, insertSql, [account, password, email, user_name]);
+        const insertSql = `INSERT INTO User (account, password, user_name) VALUES (?, ?, ?)`;
+        const insertResult = await this.mysqlService.execute(connection, insertSql, [account, password, user_name]);
 
-        return
+        return true;
+    }
+    
+    async findOne(account: string): Promise<any> {
+
+        const selectSql = `SELECT * FROM User WHERE account = ?`;
+        const connection = await this.mysqlService.init();
+        
+        const userResult = await this.mysqlService.execute(connection, selectSql, [account]);
+        console.log("userResult", userResult)
+        
+        return userResult.find(user => user.account === account);
     }
 }

@@ -6,34 +6,34 @@ services:
     build: .
     image: wemo-practice
     container_name: wemo-practice
-    working_dir: /src
     volumes:
-      - ./src:/src # 將本地檔案映射到容器中
+      - ./dist:/dist # 將本地檔案映射到容器中
     ports:
       - "3000:3000" # 將容器的 3000 port 映射到主機的 3000 port
     depends_on:
       - mysql
-      - redis
+      # - redis
 
   # MySQL
   mysql:
-    image: mysql:latest # 選擇 MySQL 版本
-    container_name: my-mysql
+    image: mysql/mysql-server:5.7
+    restart: always
+    container_name: my-wemo-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: my_database
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
     ports:
-      - "3306:3306" # 將容器的 3306 port 映射到主機的 3306 port
+      - "3307:3307" # 將容器的 3306 port 映射到主機的 3306 port
     volumes:
-      - ./mysql_data:/var/lib/mysql # 左側本地 右側容器 MySQL 資料存放到本地
+      - ./mysql_data/:/docker-entrypoint-initdb.d # 左側本地 右側容器 MySQL 資料存放到本地
 
   # Redis
-  redis:
-    image: redis:latest # 選擇 Redis 版本
-    container_name: my-redis
-    ports:
-      - "6379:6379" # 將容器的 6379 port 映射到主機的 6379 port
-    volumes:
-      - ./redis_data:/data # 將 Redis 資料存放到本地
+  # redis:
+  #   image: redis:latest # 選擇 Redis 版本
+  #   container_name: my-redis
+  #   ports:
+  #     - "6380:6379" # 將容器的 6379 port 映射到主機的 6379 port
+  #   volumes:
+  #     - ./redis_data:/data # 將 Redis 資料存放到本地

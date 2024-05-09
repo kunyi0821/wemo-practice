@@ -13,8 +13,6 @@ export class ScooterService {
 
         let scooterData = await this.mysqlService.execute(connection, `SELECT * FROM Scooter`);
 
-        console.log("scooterData = ",scooterData)
-
         for (const scooter of scooterData) {
             returnArray.push({
                 scooter_id: scooter.scooter_id,
@@ -30,12 +28,12 @@ export class ScooterService {
     }
 
     async addScooter(data: any): Promise<any> {
-        const { account, password, email, user_name } = data;
+        const { license_plate } = data;
         const connection = await this.mysqlService.init();
 
         const insertSql = `INSERT INTO Scooter (license_plate) VALUES (?)`;
-        await this.mysqlService.execute(connection, insertSql, [account, password, email, user_name]);
+        await this.mysqlService.execute(connection, insertSql, [license_plate]);
 
-        return
+        return {};
     }
 }

@@ -1,20 +1,29 @@
-# 使用 Node.js 官方的 lts-alpine 作為基底鏡像
-FROM node:lts-alpine
+FROM node:lts-alpine as builder
 
-# 設定工作目錄
-WORKDIR /app
+ENV NODE_ENV build
 
-# 複製應用程式程式碼到容器內
-COPY ./src /app
+USER node
+WORKDIR /home/node
 
-# 安裝應用程式的相依套件
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
-# 编译 TypeScript 代码
-RUN npm run build
+COPY --chown=node:node . .
+RUN npx prisma generate \
+    && npm run build \
+    && npm prune --omit=dev
 
-# 開放應用程式的端口
-EXPOSE 3000
+# ---
 
-# 定義容器啟動命令
+FROM node:20-alpine
+
+ENV NODE_ENV production
+
+USER node
+WORKDIR /home/node
+
+COPY --from=builder --chown=node:node /home/node/package*.json ./
+COPY --from=builder --chown=node:node /home/node/node_modules/ ./node_modules/
+COPY --from=builder --chown=node:node /home/node/dist/ ./dist/
+
 CMD ["node", "dist/main.js"]

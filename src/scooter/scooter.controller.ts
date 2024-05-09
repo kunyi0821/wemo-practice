@@ -16,17 +16,12 @@ export class ScooterController {
     @HttpCode(201)
     getUser2(@Body() postData: ScooterDto.AddScooterDto): any {
 
-       return
-    };
+        if (!postData.license_plate) {
+            console.error("license_plate is necessary");
+            return {error: "license_plate is necessary"};
+        }
 
-    @Put(":id")
-    putUser(): any {
-        return "Put";
+       return this.scooterService.addScooter(postData);
     };
-
-    @Delete(":id")
-    deleteUser(): any {
-        return "Delete"
-    }
 
 }
