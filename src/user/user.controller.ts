@@ -12,8 +12,11 @@ export class UserController {
     @UseGuards(AuthGuard)
     @Get()
     @HttpCode(200)
-    getUser(): Promise<UserDto.GetUserDto> {
-        return this.userService.getUser();
+    getUser(@Request() req): Promise<UserDto.GetUserDto> {
+        let data = {
+            user_id: req.user.user_id
+        }
+        return this.userService.getUser(data);
     };
 
     @Post()
@@ -22,14 +25,14 @@ export class UserController {
         return this.userService.addUser(postData);
     };
 
-    @Put(":id")
-    putUser(): any {
-        return "Put";
-    };
+    // @Put(":id")
+    // putUser(): any {
+    //     return "Put";
+    // };
 
-    @Delete(":id")
-    deleteUser(): any {
-        return "Delete"
-    }
+    // @Delete(":id")
+    // deleteUser(): any {
+    //     return "Delete"
+    // }
 
 }

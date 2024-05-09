@@ -3,14 +3,14 @@ import * as mysql from "mysql2/promise";
 
 @Injectable()
 export class MysqlService {
-    private pool: mysql.Pool;
+    private readonly pool: mysql.Pool;
 
     constructor() {
         this.pool = mysql.createPool({
-            host: process.env.MYSQL_HOST,
-            user: process.env.MYSQL_USER,
-            password: process.env.MYSQL_PASSWORD,
-            database: process.env.MYSQL_DATABASE,
+            host: process.env.MYSQL_HOST || "localhost",
+            user: process.env.MYSQL_USER || "app_user",
+            password: process.env.MYSQL_PASSWORD || "app_password",
+            database: process.env.MYSQL_DATABASE || "my_database",
             connectionLimit: 10,
         });
     }

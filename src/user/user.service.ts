@@ -10,12 +10,15 @@ export class UserService {
         private readonly returnService: ReturnService
     ) {};
 
-    async getUser(): Promise<any> {
+    async getUser(data: any): Promise<any> {
+        const { user_id } = data
         let returnArray = [];
 
         const connection = await this.mysqlService.init();
 
-        let userData = await this.mysqlService.execute(connection, `SELECT * FROM User`);
+        const selectSql = `SELECT * FROM User WHERE user_id = ?`
+
+        let userData = await this.mysqlService.execute(connection, selectSql, [user_id]);
 
         for (const user of userData) {
             returnArray.push({

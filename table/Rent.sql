@@ -10,8 +10,8 @@ CREATE TABLE `Rent` (
   `use_time` int DEFAULT '0' COMMENT '使用時間',
   PRIMARY KEY (`rent_id`),
   KEY `idx_user_scooter_id` (`user_id`,`scooter_id`),
-  CONSTRAINT `fk_scooter_id` FOREIGN KEY (`scooter_id`) REFERENCES `Scooter`,
-  CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `User`
+  CONSTRAINT `fk_scooter_id` FOREIGN KEY (`scooter_id`) REFERENCES `Scooter`(`scooter_id`),
+  CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4
 
 -- 可使用diagram去紀錄資料庫更動

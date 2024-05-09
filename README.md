@@ -24,4 +24,9 @@ $ docker-compose up
 
 分別為 User, Scooter 和 Rent
 
+
+下以下指令即可將服務起起來
+```
+npm run start:dev
+```
 # wemo-practice

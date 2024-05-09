@@ -1,4 +1,4 @@
-import { Controller, Post, Get, HttpCode, Body, Request, UseGuards, Res, HttpStatus} from "@nestjs/common";
+import { Controller, Post, Get, HttpCode, Body, Request, UseGuards } from "@nestjs/common";
 import { RentService } from "./rent.service";
 import { RentDto } from "./rent.dto";
 import { AuthGuard } from "src/auth/auth.guard";
@@ -10,8 +10,11 @@ export class RentController {
     @UseGuards(AuthGuard)
     @Get()
     @HttpCode(200)
-    getUser(): Promise<any> {
-        return this.rentService.getRent();
+    getUser(@Request() req): Promise<any> {
+        const data = {
+            user_id: req.user.user_id
+        }
+        return this.rentService.getRent(data);
     };
 
     @UseGuards(AuthGuard)

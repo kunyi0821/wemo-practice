@@ -7,7 +7,6 @@ import { UserService } from 'src/user/user.service';
 import { MysqlService } from 'src/common/mysql.service';
 import { ReturnService } from '@common/return.service';
 
-console.log("process", process.env.PASSWORD_SECRET_KEY)
 @Module({
     imports: [
         UserModule,

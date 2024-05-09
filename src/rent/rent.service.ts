@@ -14,11 +14,11 @@ export class RentService {
         private readonly returnService: ReturnService
     ) {};
 
-    async getRent(): Promise<any> {
-
+    async getRent(data: any): Promise<any> {
+        const { user_id } = data;
         const connection = await this.mysqlService.init();
 
-        let rentData = await this.mysqlService.execute(connection, `SELECT * FROM Rent`);
+        let rentData = await this.mysqlService.execute(connection, `SELECT * FROM Rent WHERE user_id = ?`, [user_id]);
 
         return this.returnService.returnJson("Success", HttpStatus.OK, rentData);
     }
@@ -26,6 +26,8 @@ export class RentService {
     async startRent(data: RentDto.RentStartDto): Promise<any> {
         const { user_id, scooter_id } = data;
         const currentDatetime = dayjs().format("YYYY-MM-DD HH:mm:ss");
+
+        // await this.redisService.hdel(user_id, "rent");
 
         const connection = await this.mysqlService.init();
         await connection.beginTransaction();
@@ -86,6 +88,11 @@ export class RentService {
         const updateRentSql = `UPDATE Rent SET end_at = ?, use_time = ? WHERE rent_id = ? AND user_id = ? AND scooter_id = ?`;
         const updateRentResult = await this.mysqlService.execute(connection, updateRentSql, [currentDatetime, useTime, rentInfo[0], user_id, scooter_id])
 
+        if (updateRentResult.affectedRows === 0) {
+                console.error("User returns the wrong scooter");
+            await connection.rollback();
+            return this.returnService.returnJson("User returns the wrong scooter", HttpStatus.INTERNAL_SERVER_ERROR, {});
+        }
         await this.redisService.hdel(user_id, "rent");
 
         await connection.commit();

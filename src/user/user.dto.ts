@@ -1,14 +1,32 @@
-import { IsNotEmpty, IsString, Matches, MinLength, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MinLength, IsEmail, IsNumber } from 'class-validator';
 
 export namespace UserDto {
+
+    /**
+     * @param {number} user_id      使用者編號
+     */
+    export class UserIdDto {
+        @IsNotEmpty()
+        @IsNumber()
+        user_id: number;
+    }
+
     /**
      * @param {number} user_id      使用者編號
      * @param {string} user_name    使用者名稱
      * @param {string} email        使用者信箱
      */
     export class GetUserDto {
+
+        @IsNotEmpty()
+        @IsNumber()
         user_id: number;
+
+        @IsNotEmpty()
+        @IsString()
         user_name: string;
+
+        @IsString()
         email?: string;
     }
 

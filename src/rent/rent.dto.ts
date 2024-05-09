@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches, MinLength, IsNumber, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MinLength, IsNumber, IsBoolean } from "class-validator";
 export namespace RentDto {
     /**
      * @param {number} rent_id      租賃編號
